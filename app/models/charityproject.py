@@ -1,25 +1,8 @@
-from datetime import datetime
+from sqlalchemy import Column, Text, String
 
-from pydantic import BaseModel
-
-
-class CharityProject(BaseModel):
-    id: int
-    name: str
-    description: str
-    full_amount: int
-    invested_amount: int
-    fully_invested: bool
-    create_date: datetime
-    close_date: datetime
+from app.models.base_model import AbstractBaseModel
 
 
-class Donation(BaseModel):
-    id: int
-    name: str
-    description: str
-    full_amount: int
-    invested_amount: int
-    fully_invested: bool
-    create_date: datetime
-    close_date: datetime
+class CharityProject(AbstractBaseModel):
+    name = Column(String(100), unique=True, nullable=False)
+    description = Column(Text, nullable=False)
