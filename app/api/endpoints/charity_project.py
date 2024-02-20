@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-# from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 
-# from app.core.db import get_async_session
+from app.core.db import get_async_session
 # # Вместо импортов 6 функций импортируйте объект meeting_room_crud.
-# from app.crud.meeting_room import meeting_room_crud
+from app.crud.charity_project import charity_project_crud
 from app.core.user import current_superuser
 # from app.models.meeting_room import MeetingRoom
 # from app.schemas.meeting_room import (
@@ -26,7 +26,7 @@ router = APIRouter()
 )
 async def create_charity_project(
         charity_project: CharityProjectCreate,
-        # session: AsyncSession = Depends(get_async_session),
+        session: AsyncSession = Depends(get_async_session),
 ):
     """
     Только для суперюзеров.
@@ -34,10 +34,21 @@ async def create_charity_project(
     Создаёт благотворительный проект.
     """
     # await check_name_duplicate(meeting_room.name, session)
-    # # Замените вызов функции на вызов метода.
-    # new_room = await meeting_room_crud.create(meeting_room, session)
-    # return new_room
-    return {'charity_project': 'charity_project СОЗДАН НОВЫЙ'}
+    new_room = await charity_project_crud.create(charity_project, session)
+    return new_room
+
+
+    # data = {
+    #     "name": "string",
+    #     "description": "string",
+    #     "full_amount": 1000,
+    #     "id": 1,
+    #     "invested_amount": 10,
+    #     "fully_invested": True,
+    #     "create_date": "2024-02-19T11:51:11.389Z",
+    #     "close_date": "2024-02-19T11:51:11.389Z"
+    # }
+    # return [data]
 
 
 @router.get(
@@ -52,7 +63,17 @@ async def get_all_charity_projects(
     # Замените вызов функции на вызов метода.
     # all_rooms = await meeting_room_crud.get_multi(session)
     # return all_rooms
-    return {'charity_project': 'Получены все проекты'}
+    data = {
+        "name": "string",
+        "description": "string",
+        "full_amount": 1000,
+        "id": 1,
+        "invested_amount": 10,
+        "fully_invested": True,
+        "create_date": "2024-02-19T11:51:11.389Z",
+        "close_date": "2024-02-19T11:51:11.389Z"
+    }
+    return [data]
 
 
 @router.patch(
