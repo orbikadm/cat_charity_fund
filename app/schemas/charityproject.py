@@ -29,6 +29,9 @@ class CharityProjectDB(BaseModel):
     create_date: datetime = Field(None, example=TIME_EXAMPLE)
     close_date: datetime = Field(None, example=TIME_EXAMPLE)
 
+    class Config:
+        orm_mode = True
+
 
 class CharityProjectUpdate(BaseModel):
     name: str = Field(..., max_length=100)

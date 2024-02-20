@@ -14,15 +14,15 @@ class DonationCreate(BaseModel):
     full_amount: PositiveInt
     comment: Optional[str]
 
-    # class Config:
-    #     orm_mode = True
-
 
 class DonationDB(BaseModel):
     full_amount: PositiveInt
     comment: Optional[str]
     id: int
     create_date: datetime = Field(None, example=TIME_EXAMPLE)
+
+    class Config:
+        orm_mode = True
 
 
 class DonationAdminDB(BaseModel):
@@ -34,3 +34,6 @@ class DonationAdminDB(BaseModel):
     invested_amount: int
     fully_invested: bool
     close_date: Optional[datetime] = Field(None, example=TIME_EXAMPLE)
+
+    class Config:
+        orm_mode = True
