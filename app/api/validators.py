@@ -34,3 +34,11 @@ def check_close_project(project):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Проект закрыт!"
         )
+
+
+def check_start_investment(project):
+    if project.invested_amount:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Проект в процессе инвестирования!"
+        )

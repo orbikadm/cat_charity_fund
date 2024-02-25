@@ -10,7 +10,7 @@ from app.core.user import current_superuser
 # from app.schemas.meeting_room import (
 #     MeetingRoomCreate, MeetingRoomDB, MeetingRoomUpdate
 # )
-from app.api.validators import check_name_duplicate, check_charity_project_exists, check_close_project
+from app.api.validators import check_name_duplicate, check_charity_project_exists, check_close_project, check_start_investment
 # from app.crud.reservation import reservation_crud
 from app.schemas.charityproject import CharityProjectUpdate, CharityProjectDB, CharityProjectCreate
 
@@ -77,9 +77,8 @@ async def update_charity_project(
 
     if obj_in.name is not None:
         await check_name_duplicate(obj_in.name, session)
-    
-    check_close_project(charity_project)
 
+    check_close_project(charity_project)
 
     charity_project = await charity_project_crud.update(
         charity_project, obj_in, session
@@ -104,5 +103,7 @@ async def delete_charity_project(
     средства, его можно только закрыть.
     """
     charity_project = await check_charity_project_exists(project_id, session)
+    check_close_project(charity_project)
+    check_start_investment(charity_project)
     charity_project = await charity_project_crud.remove(charity_project, session)
     return charity_project

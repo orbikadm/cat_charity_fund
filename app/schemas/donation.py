@@ -13,6 +13,7 @@ TIME_EXAMPLE = "2024-02-19T11:51:11.389Z"   # ДОЛЖЕН БЫТЬ НЕ В СХ
 class DonationCreate(BaseModel):
     full_amount: PositiveInt
     comment: Optional[str]
+    create_date: datetime = Field(None, example=TIME_EXAMPLE)
 
 
 class DonationDB(BaseModel):
