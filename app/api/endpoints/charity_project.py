@@ -10,10 +10,12 @@ from app.core.user import current_superuser
 # from app.schemas.meeting_room import (
 #     MeetingRoomCreate, MeetingRoomDB, MeetingRoomUpdate
 # )
-from app.api.validators import check_name_duplicate, check_charity_project_exists
+from app.api.validators import check_name_duplicate, check_charity_project_exists, check_close_project
 # from app.crud.reservation import reservation_crud
 from app.schemas.charityproject import CharityProjectUpdate, CharityProjectDB, CharityProjectCreate
 
+
+from app.service.investment import investment_process
 
 router = APIRouter()
 
@@ -34,9 +36,9 @@ async def create_charity_project(
     Создаёт благотворительный проект.
     """
     await check_name_duplicate(charity_project.name, session)
-    new_room = await charity_project_crud.create(charity_project, session)
-    print(new_room)
-    return new_room
+    new_project = await charity_project_crud.create(charity_project, session)
+    new_project = await investment_process(new_project, session)
+    return new_project
 
 
 @router.get(
@@ -75,6 +77,9 @@ async def update_charity_project(
 
     if obj_in.name is not None:
         await check_name_duplicate(obj_in.name, session)
+    
+    check_close_project(charity_project)
+
 
     charity_project = await charity_project_crud.update(
         charity_project, obj_in, session

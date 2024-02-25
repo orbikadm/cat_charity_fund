@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
-from app.models.charityproject import CharityProject
+from app.models.charity_project import CharityProject
 
 
 class CRUDCharityProject(CRUDBase):
@@ -21,6 +21,8 @@ class CRUDCharityProject(CRUDBase):
         )
         db_project_id = db_project_id.scalars().first()
         return db_project_id
+    
+    
 
 
 charity_project_crud = CRUDCharityProject(CharityProject)

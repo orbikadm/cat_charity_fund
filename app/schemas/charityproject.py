@@ -11,8 +11,8 @@ TIME_EXAMPLE = "2024-02-19T11:51:11.389Z"   # ДОЛЖЕН БЫТЬ НЕ В СХ
 
 
 class CharityProjectCreate(BaseModel):
-    name: str = Field(..., max_length=100)
-    description: str
+    name: str = Field(..., min_length=1, max_length=100)
+    description: str = Field(..., min_length=1)
     full_amount: PositiveInt
 
     # class Config:
@@ -20,8 +20,8 @@ class CharityProjectCreate(BaseModel):
 
 
 class CharityProjectDB(BaseModel):
-    name: str = Field(..., max_length=100)
-    description: str
+    name: str = Field(..., min_length=1, max_length=100)
+    description: str = Field(..., min_length=1)
     full_amount: PositiveInt
     id: int
     invested_amount: int
@@ -34,6 +34,7 @@ class CharityProjectDB(BaseModel):
 
 
 class CharityProjectUpdate(BaseModel):
-    name: str = Field(..., max_length=100)
-    description: str
+    name: str = Field(None, min_length=1, max_length=100)
+    description: str = Field(None, min_length=1)
     full_amount: PositiveInt
+    fully_invested: bool

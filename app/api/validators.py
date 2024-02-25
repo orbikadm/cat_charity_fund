@@ -27,3 +27,10 @@ async def check_charity_project_exists(
             status_code=status.HTTP_404_NOT_FOUND, detail="Проект не найден!"
         )
     return charity_project
+
+
+def check_close_project(project):
+    if project.fully_invested:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Проект закрыт!"
+        )
