@@ -10,7 +10,7 @@ from app.core.user import current_superuser
 # from app.schemas.meeting_room import (
 #     MeetingRoomCreate, MeetingRoomDB, MeetingRoomUpdate
 # )
-from app.api.validators import check_name_duplicate, check_charity_project_exists, check_close_project, check_start_investment
+from app.api.validators import check_name_duplicate, check_charity_project_exists, check_close_project, check_start_investment, check_invest_value
 # from app.crud.reservation import reservation_crud
 from app.schemas.charityproject import CharityProjectUpdate, CharityProjectDB, CharityProjectCreate
 
@@ -57,7 +57,7 @@ async def get_all_charity_projects(
 @router.patch(
     '/{project_id}',
     response_model=CharityProjectDB,
-    # response_model_exclude_none=True,
+    response_model_exclude_none=True,
     dependencies=[Depends(current_superuser)],
 )
 async def update_charity_project(
@@ -79,6 +79,9 @@ async def update_charity_project(
         await check_name_duplicate(obj_in.name, session)
 
     check_close_project(charity_project)
+
+    if obj_in.full_amount:
+        check_invest_value(obj_in.full_amount, charity_project)
 
     charity_project = await charity_project_crud.update(
         charity_project, obj_in, session

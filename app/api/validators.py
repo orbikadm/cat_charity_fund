@@ -29,16 +29,24 @@ async def check_charity_project_exists(
     return charity_project
 
 
-def check_close_project(project):
+def check_close_project(project: CharityProject) -> None:
     if project.fully_invested:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Проект закрыт!"
         )
 
 
-def check_start_investment(project):
+def check_start_investment(project: CharityProject) -> None:
     if project.invested_amount:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Проект в процессе инвестирования!"
+        )
+
+
+def check_invest_value(full_amount: int, project: CharityProject) -> None:
+    if full_amount < project.invested_amount:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Нельзя уменьшать бюджет проекта!"
         )
