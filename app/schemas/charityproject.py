@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, PositiveInt, Extra
+from pydantic import BaseModel, Extra, Field, PositiveInt
 from typing import Optional
 
 from app.schemas.base import AbstractBaseSchema

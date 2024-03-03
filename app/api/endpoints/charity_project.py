@@ -2,20 +2,16 @@ from fastapi import APIRouter, Depends
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.validators import (
+    check_name_duplicate, check_charity_project_exists,
+    check_close_project, check_start_investment, check_invest_value
+)
 from app.core.db import get_async_session
-# # Вместо импортов 6 функций импортируйте объект meeting_room_crud.
-from app.crud.charity_project import charity_project_crud
 from app.core.user import current_superuser
-# from app.models.meeting_room import MeetingRoom
-# from app.schemas.meeting_room import (
-#     MeetingRoomCreate, MeetingRoomDB, MeetingRoomUpdate
-# )
-from app.api.validators import check_name_duplicate, check_charity_project_exists, check_close_project, check_start_investment, check_invest_value
-# from app.crud.reservation import reservation_crud
+from app.crud.charity_project import charity_project_crud
 from app.schemas.charityproject import CharityProjectUpdate, CharityProjectDB, CharityProjectCreate
-
-
 from app.service.investment import investment_process
+
 
 router = APIRouter()
 
@@ -23,7 +19,6 @@ router = APIRouter()
 @router.post(
     '/',
     response_model=CharityProjectDB,
-    # response_model_exclude_none=True,
     dependencies=[Depends(current_superuser)],
 )
 async def create_charity_project(
@@ -44,7 +39,6 @@ async def create_charity_project(
 @router.get(
     '/',
     response_model=list[CharityProjectDB],
-    # response_model_exclude_none=True,
 )
 async def get_all_charity_projects(
         session: AsyncSession = Depends(get_async_session),
@@ -92,7 +86,6 @@ async def update_charity_project(
 @router.delete(
     '/{project_id}',
     response_model=CharityProjectDB,
-    # response_model_exclude_none=True,
     dependencies=[Depends(current_superuser)],
 )
 async def delete_charity_project(

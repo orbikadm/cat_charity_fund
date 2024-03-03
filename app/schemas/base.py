@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import Field, PositiveInt, BaseModel
+from pydantic import BaseModel, Field, PositiveInt
 
 
 TIME_EXAMPLE = "2024-02-19T11:51:11.389Z"   # ДОЛЖЕН БЫТЬ НЕ В СХЕМЕ
