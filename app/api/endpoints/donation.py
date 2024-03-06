@@ -1,13 +1,11 @@
 from fastapi import APIRouter, Depends
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_async_session
 from app.core.user import current_superuser, current_user
 from app.crud.donation import donation_crud
-from app.schemas.donation import DonationCreate, DonationDB, DonationAdminDB
 from app.models import User
-
+from app.schemas.donation import DonationCreate, DonationDB, DonationAdminDB
 from app.service.investment import investment_process
 
 
@@ -17,7 +15,6 @@ router = APIRouter()
 @router.post(
     '/',
     response_model=DonationDB,
-    # response_model_exclude_none=True,
 )
 async def create_donation(
     donation: DonationCreate,
@@ -35,7 +32,6 @@ async def create_donation(
     '/',
     response_model=list[DonationAdminDB],
     dependencies=[Depends(current_superuser)],
-    # response_model_exclude_none=True,
 )
 async def get_all_donations(
     session: AsyncSession = Depends(get_async_session),
@@ -53,14 +49,12 @@ async def get_all_donations(
 @router.get(
     '/my',
     response_model=list[DonationDB],
-    # response_model_exclude={'user_id'},
 )
 async def get_user_donations(
     user: User = Depends(current_user),
     session: AsyncSession = Depends(get_async_session),
 ):
     """Вернуть список пожертвований пользователя, выполняющего запрос."""
-    # await check_meeting_room_exists(meeting_room_id, session)
     donations = await donation_crud.get_by_user(
         user=user, session=session
     )

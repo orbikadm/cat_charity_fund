@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.validators import (
@@ -9,7 +8,9 @@ from app.api.validators import (
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charity_project_crud
-from app.schemas.charityproject import CharityProjectUpdate, CharityProjectDB, CharityProjectCreate
+from app.schemas.charityproject import (
+    CharityProjectUpdate, CharityProjectDB, CharityProjectCreate
+)
 from app.service.investment import investment_process
 
 
@@ -101,5 +102,7 @@ async def delete_charity_project(
     charity_project = await check_charity_project_exists(project_id, session)
     check_close_project(charity_project)
     check_start_investment(charity_project)
-    charity_project = await charity_project_crud.remove(charity_project, session)
+    charity_project = await charity_project_crud.remove(
+        charity_project, session
+    )
     return charity_project
