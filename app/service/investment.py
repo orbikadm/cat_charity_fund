@@ -9,10 +9,8 @@ from app.models.charity_project import CharityProject
 from app.core.db import get_async_session
 
 
-
-
-
-async def mark_fully_invested(obj, session):
+def close_obj(obj):
+    obj.invested_amount = obj.full_amount
     obj.fully_invested = True
     obj.close_date = datetime.now()
 
@@ -35,58 +33,25 @@ async def investment_process(
     if not objs_db:
         return obj_in
 
-    if isinstance(obj_in, Donation):
-        for project in objs_db:
-            need_money = project.full_amount - project.invested_amount
-            to_invest = obj_in.full_amount - obj_in.invested_amount
+    for obj_db in objs_db:
+        need_money = obj_db.full_amount - obj_db.invested_amount
+        available = obj_in.full_amount - obj_in.invested_amount
 
-            if obj_in.fully_invested:
-                break
+        if need_money > available:
+            obj_db.invested_amount += available
+            close_obj(obj_in)
 
-            if need_money > to_invest:
-                project.invested_amount += to_invest
-                obj_in.invested_amount = obj_in.full_amount
-                await mark_fully_invested(obj_in, session)
-                break
+        elif need_money == available:
+            close_obj(obj_in)
+            close_obj(obj_db)
 
-            elif need_money == to_invest:
-                obj_in.invested_amount = obj_in.full_amount
-                project.invested_amount = project.full_amount
-                await mark_fully_invested(obj_in, session)
-                await mark_fully_invested(project, session)
-                break
+        else:
+            obj_in.invested_amount += need_money
+            close_obj(obj_db)
 
-            elif need_money < to_invest:
-                obj_in.invested_amount += need_money
-                project.invested_amount = project.full_amount
-                await mark_fully_invested(project, session)
+        session.add(obj_db)
 
-
-        await session.commit()
-
-    if isinstance(obj_in, CharityProject):
-
-        for donate in objs_db:
-            to_invest = donate.full_amount - donate.invested_amount
-            need_money = obj_in.full_amount - obj_in.invested_amount
-
-            if need_money > to_invest:
-                obj_in.invested_amount += to_invest
-                donate.invested_amount = obj_in.full_amount
-                await mark_fully_invested(donate, session)
-
-            if need_money == to_invest:
-                obj_in.invested_amount = obj_in.full_amount
-                donate.invested_amount = donate.full_amount
-                await mark_fully_invested(obj_in, session)
-                await mark_fully_invested(donate, session)
-
-            if need_money < to_invest:
-                obj_in.invested_amount += need_money
-                donate.invested_amount = donate.full_amount
-                await mark_fully_invested(donate, session)
-
-            if obj_in.fully_invested:
-                return obj_in
-        await session.commit()
+    session.add(obj_in)
+    await session.commit()
+    await session.refresh(obj_in)
     return obj_in
