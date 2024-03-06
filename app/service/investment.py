@@ -1,135 +1,92 @@
-# from datetime import datetime
-
-# from fastapi import Depends
-# from sqlalchemy.ext.asyncio import AsyncSession
-# from sqlalchemy import select
-
-# from app.models.donation import Donation
-# from app.models.charityproject import CharityProject
-# from app.core.db import get_async_session
-
-
-
-
-
-# def mark_fully_invested(obj, session):
-#     obj.fully_invested = True
-#     obj.close_date = datetime.now()
-
-
-# async def investment_process(
-#         donation: Donation,
-#         project: CharityProject,
-#         session: AsyncSession = Depends(get_async_session)
-# ) -> None:
-
-#     projects = await session.execute(
-#         select(project)
-#         .where(project.fully_invested == 0)
-#         .order_by(project.create_date.desc())
-#     )
-#     projects: list[CharityProject] = projects.scalars().all()
-
-#     while projects and donation.full_amount > donation.invested_amount:
-#         actual_project = projects.pop()
-#         money_in_donate = donation.full_amount - donation.invested_amount
-
-#         need_money = actual_project.full_amount - actual_project.invested_amount
-
-#         if need_money > money_in_donate:
-#             donation.invested_amount = donation.full_amount
-#             actual_project.invested_amount += donation.full_amount
-
-#             if donation.invested_amount == 0:
-#                 mark_fully_invested(donation)
-#         else:
-#             donation.invested_amount += need_money
-#             mark_fully_invested(donation)
-
-
-
-
-
-
-
-    # найти проекты
-    # пока есть деньги в донате:
-    #     берем неполный проект
-    #     считаем недостающую сумму
-    #     если недостающая сумма > доната:
-    #         деньги с доната кладем в проект
-    #         донат отмечаем fully_invested
-    #         если сумма доната == нулю:
-    #             отмечаем донат fully_invested
-    #     иначе:
-    #         инвестировано в донате увеличиваем на недостающую сумму
-    #         отмечаем донат как fully_invested
-
-
-# def investment_process(project):
-#     найти донаты
-#     пока есть деньги для проекта:
-#         берем донат с деньгами
-#         считаем недостающую сумму
-#         если недостающая сумма > доната:
-#             деньги с доната кладем в проект
-#             донат отмечаем fully_invested
-#             если сумма доната == нулю:
-#                 отмечаем донат fully_invested
-#         иначе:
-#             сумму в донате уменьшаем на недостающую сумму
-#             отмечаем донат как fully_invested
-
-
-
-
-
 from datetime import datetime
 from typing import Union
-
-from sqlalchemy import select
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
-from app.models.charity_project import CharityProject
 from app.models.donation import Donation
+from app.models.charity_project import CharityProject
+from app.core.db import get_async_session
 
 
-def mark_as_invested(db_obj):
-    db_obj.fully_invested = True
-    db_obj.close_date = datetime.now()
+
+
+
+async def mark_fully_invested(obj, session):
+    obj.fully_invested = True
+    obj.close_date = datetime.now()
 
 
 async def investment_process(
-    obj_in: Union[CharityProject, Donation], session: AsyncSession
-):
-    db_obj = CharityProject if isinstance(obj_in, Donation) else Donation
+        obj_in: Union[CharityProject, Donation],
+        session: AsyncSession = Depends(get_async_session)
+) -> None:
 
-    db_objs = await session.execute(
-        select(db_obj)
-        .where(db_obj.fully_invested == 0)
-        .order_by(db_obj.create_date.desc(), db_obj.id.desc())
+    obj_db_model = CharityProject if isinstance(obj_in, Donation) else Donation
+
+    objs_db = await session.execute(
+        select(obj_db_model)
+        .where(obj_db_model.fully_invested == 0)
+        .order_by(obj_db_model.create_date.desc())
     )
-    db_objs = db_objs.scalars().all()
 
-    while db_objs and obj_in.full_amount > obj_in.invested_amount:
-        db_obj = db_objs.pop()
+    objs_db = objs_db.scalars().all()
 
-        needed_money = db_obj.full_amount - db_obj.invested_amount
+    if not objs_db:
+        return obj_in
 
-        if obj_in.full_amount > needed_money:
-            obj_in.invested_amount += needed_money
-        else:
-            obj_in.invested_amount = obj_in.full_amount
-            mark_as_invested(obj_in)
+    if isinstance(obj_in, Donation):
+        for project in objs_db:
+            need_money = project.full_amount - project.invested_amount
+            to_invest = obj_in.full_amount - obj_in.invested_amount
 
-            db_obj.invested_amount += obj_in.full_amount
+            if obj_in.fully_invested:
+                break
 
-            if db_obj.invested_amount == db_obj.full_amount:
-                mark_as_invested(db_obj)
+            if need_money > to_invest:
+                project.invested_amount += to_invest
+                obj_in.invested_amount = obj_in.full_amount
+                await mark_fully_invested(obj_in, session)
+                break
 
-        session.add(db_obj)
+            elif need_money == to_invest:
+                obj_in.invested_amount = obj_in.full_amount
+                project.invested_amount = project.full_amount
+                await mark_fully_invested(obj_in, session)
+                await mark_fully_invested(project, session)
+                break
 
-    session.add(obj_in)
-    await session.commit()
-    await session.refresh(obj_in)
+            elif need_money < to_invest:
+                obj_in.invested_amount += need_money
+                project.invested_amount = project.full_amount
+                await mark_fully_invested(project, session)
+
+
+        await session.commit()
+
+    if isinstance(obj_in, CharityProject):
+
+        for donate in objs_db:
+            to_invest = donate.full_amount - donate.invested_amount
+            need_money = obj_in.full_amount - obj_in.invested_amount
+
+            if need_money > to_invest:
+                obj_in.invested_amount += to_invest
+                donate.invested_amount = obj_in.full_amount
+                await mark_fully_invested(donate, session)
+
+            if need_money == to_invest:
+                obj_in.invested_amount = obj_in.full_amount
+                donate.invested_amount = donate.full_amount
+                await mark_fully_invested(obj_in, session)
+                await mark_fully_invested(donate, session)
+
+            if need_money < to_invest:
+                obj_in.invested_amount += need_money
+                donate.invested_amount = donate.full_amount
+                await mark_fully_invested(donate, session)
+
+            if obj_in.fully_invested:
+                return obj_in
+        await session.commit()
     return obj_in
