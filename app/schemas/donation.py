@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, PositiveInt
 
 from app.schemas.base import AbstractBaseSchema
-from app.schemas.base import TIME_EXAMPLE
+from app.constants import TIME_EXAMPLE
 
 
 class DonationCreate(BaseModel):

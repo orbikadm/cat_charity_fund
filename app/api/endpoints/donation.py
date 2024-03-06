@@ -41,9 +41,7 @@ async def get_all_donations(
 
     Возвращает список всех пожертвований.
     """
-    all_donations = await donation_crud.get_multi(session)
-    print(all_donations)
-    return all_donations
+    return await donation_crud.get_multi(session)
 
 
 @router.get(
@@ -55,7 +53,4 @@ async def get_user_donations(
     session: AsyncSession = Depends(get_async_session),
 ):
     """Вернуть список пожертвований пользователя, выполняющего запрос."""
-    donations = await donation_crud.get_by_user(
-        user=user, session=session
-    )
-    return donations
+    return await donation_crud.get_by_user(user=user, session=session)

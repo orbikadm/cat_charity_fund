@@ -3,8 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, PositiveInt
 
-
-TIME_EXAMPLE = "2024-02-19T11:51:11.389Z"
+from app.constants import TIME_EXAMPLE
 
 
 class AbstractBaseSchema(BaseModel):

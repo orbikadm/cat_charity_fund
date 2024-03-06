@@ -33,8 +33,7 @@ async def create_charity_project(
     """
     await check_name_duplicate(charity_project.name, session)
     new_project = await charity_project_crud.create(charity_project, session)
-    new_project = await investment_process(new_project, session)
-    return new_project
+    return await investment_process(new_project, session)
 
 
 @router.get(
@@ -45,8 +44,7 @@ async def get_all_charity_projects(
         session: AsyncSession = Depends(get_async_session),
 ):
     """Возвращает список всех проектов."""
-    all_rooms = await charity_project_crud.get_multi(session)
-    return all_rooms
+    return await charity_project_crud.get_multi(session)
 
 
 @router.patch(
@@ -66,9 +64,7 @@ async def update_charity_project(
     Закрытый проект нельзя редактировать; нельзя установить требуемую сумму
     меньше уже вложенной.
     """
-    charity_project = await check_charity_project_exists(
-        project_id, session
-    )
+    charity_project = await check_charity_project_exists(project_id, session)
 
     if obj_in.name is not None:
         await check_name_duplicate(obj_in.name, session)
@@ -78,10 +74,7 @@ async def update_charity_project(
     if obj_in.full_amount:
         check_invest_value(obj_in.full_amount, charity_project)
 
-    charity_project = await charity_project_crud.update(
-        charity_project, obj_in, session
-    )
-    return charity_project
+    return await charity_project_crud.update(charity_project, obj_in, session)
 
 
 @router.delete(
@@ -102,7 +95,4 @@ async def delete_charity_project(
     charity_project = await check_charity_project_exists(project_id, session)
     check_close_project(charity_project)
     check_start_investment(charity_project)
-    charity_project = await charity_project_crud.remove(
-        charity_project, session
-    )
-    return charity_project
+    return await charity_project_crud.remove(charity_project, session)
